@@ -1,5 +1,9 @@
+import ImageUploadForm from "./imageUploadReference"
 export default function Home() {
   return(
-    <div className="text-xl">Helloooooooooo</div>
+   <div>
+    
+    <ImageUploadForm/>
+   </div>
   )
 }
