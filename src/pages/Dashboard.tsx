@@ -5,7 +5,7 @@ import QRCode from "react-qr-code"
 import {
   LineChart,
   Line,
-  XAxis,
+  XAxis, 
   YAxis,
   CartesianGrid,
   Tooltip,
@@ -13,6 +13,9 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -110,15 +113,17 @@ const DashboardComponent = () => {
   };
 
   const analyticsData = [
-    { name: "Jan", visitors: 4000, pageViews: 2400 },
-    { name: "Feb", visitors: 3000, pageViews: 1398 },
-    { name: "Mar", visitors: 2000, pageViews: 9800 },
-    { name: "Apr", visitors: 2780, pageViews: 3908 },
-    { name: "May", visitors: 1890, pageViews: 4800 },
-    { name: "Jun", visitors: 2390, pageViews: 3800 },
-    { name: "Jul", visitors: 3490, pageViews: 4300 },
-    { name: "Aug", visitors: 2000, pageViews: 6000 },
+    { name: "Jan", visitors: 4000, pageViews: 2400, facebook: 1200, instagram: 800, linkedin: 600, twitter: 400 },
+    { name: "Feb", visitors: 3000, pageViews: 1398, facebook: 1100, instagram: 700, linkedin: 500, twitter: 300 },
+    { name: "Mar", visitors: 2000, pageViews: 9800, facebook: 1000, instagram: 600, linkedin: 400, twitter: 200 },
+    { name: "Apr", visitors: 2780, pageViews: 3908, facebook: 900, instagram: 500, linkedin: 300, twitter: 100 },
+    { name: "May", visitors: 1890, pageViews: 4800, facebook: 800, instagram: 400, linkedin: 200, twitter: 50 },
+    { name: "Jun", visitors: 2390, pageViews: 3800, facebook: 700, instagram: 300, linkedin: 100, twitter: 25 },
+    { name: "Jul", visitors: 3490, pageViews: 4300, facebook: 600, instagram: 200, linkedin: 50, twitter: 10 },
+    { name: "Aug", visitors: 2000, pageViews: 6000, facebook: 500, instagram: 100, linkedin: 25, twitter: 5 },
   ]
+
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042"]
 
   if (isCreating) {
     return (
@@ -354,9 +359,46 @@ const DashboardComponent = () => {
                             }}
                           />
                           <Legend />
-                          <Bar dataKey="visitors" fill="#8884d8" />
-                          <Bar dataKey="pageViews" fill="#82ca9d" />
+                          <Bar dataKey="facebook" fill="#8884d8" />
+                          <Bar dataKey="instagram" fill="#82ca9d" />
+                          <Bar dataKey="linkedin" fill="#ffc658" />
+                          <Bar dataKey="twitter" fill="#ff8042" />
                         </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="h-[300px] text-white">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={analyticsData}
+                            dataKey="facebook"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            fill="#8884d8"
+                            label
+                          >
+                            {analyticsData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Pie
+                            data={analyticsData}
+                            dataKey="instagram"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={90}
+                            outerRadius={110}
+                            fill="#82ca9d"
+                            label
+                          >
+                            {analyticsData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                        </PieChart>
                       </ResponsiveContainer>
                     </div>
                   </div>

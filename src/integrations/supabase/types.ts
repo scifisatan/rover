@@ -18,7 +18,7 @@ export type Database = {
           twitter_click_count: number | null
           visitors: number
           website_id: string
-        }
+        } 
         Insert: {
           facebook_click_count?: number | null
           id?: string
