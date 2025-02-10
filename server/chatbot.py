@@ -8,6 +8,7 @@ from azure.core.credentials import AzureKeyCredential
 import json
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -16,11 +17,12 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Azure Vision Setup
-AZURE_ENDPOINT = "https://magnum.cognitiveservices.azure.com/"
-AZURE_KEY = "4ideuxnCLcWS3Ysb7qmjZI6DJkkZme3HF2KxQ1aFZUd6Rv269EADJQQJ99BAACqBBLyXJ3w3AAAFACOGW4fo"
+
+AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
+AZURE_KEY = os.getenv("AZURE_KEY")
 
 # Gemini Setup
-GEMINI_API_KEY = 'AIzaSyAF8G1xWsUlsTmqgtJfqNO1KX6alwq7i1w'
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
