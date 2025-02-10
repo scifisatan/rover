@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Loader2, Plus } from "lucide-react"
+import { Loader2, Plus, Trash2 } from "lucide-react"
 import QRCode from "react-qr-code"
 import {
   LineChart,
@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CreateWebsiteForm } from "@/components/website-form/steps/CreateWebsiteForm"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { supabase } from "@/integrations/supabase/client"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { ChatbotUI } from "@/components/ChatbotUI"
 
@@ -78,6 +78,37 @@ const DashboardComponent = () => {
     enabled: !!user?.id,
   })
 
+  const deleteWebsite = useMutation({
+    mutationFn: async (websiteId: string) => {
+      
+      const { error:deleteError } = await supabase
+        .from('websites')
+        .delete()
+        .eq('id', websiteId)
+
+    
+
+      if (deleteError ) {
+        console.error('Error deleting website and related data:', deleteError);
+        throw new Error('Failed to delete website and its data'); 
+      }
+    },
+    onSuccess: () => {
+      refetch();
+    },
+    onError: (error) => {
+      console.error('Error during deletion:', error);
+      alert('Failed to delete website and its data. Please try again.');
+    }
+  });
+
+  const handleDeleteWebsite = async (websiteId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this website?")) {
+      deleteWebsite.mutate(websiteId);
+    }
+  };
+
   const analyticsData = [
     { name: "Jan", visitors: 4000, pageViews: 2400 },
     { name: "Feb", visitors: 3000, pageViews: 1398 },
@@ -126,7 +157,7 @@ const DashboardComponent = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <div className="flex space-x-4">
-           
+
             <Button
               onClick={() => setIsCreating(true)}
               className="bg-white/10 text-white border border-white/20 hover:bg-white/20"
@@ -134,7 +165,7 @@ const DashboardComponent = () => {
               <Plus className="mr-2 h-4 w-4" />
               Create Website
             </Button>
-            <Button onClick={() => {supabase.auth.signOut(); navigate("/")}} className="bg-white/10 text-white border border-white/20 hover:bg-white/20">
+            <Button onClick={() => { supabase.auth.signOut(); navigate("/") }} className="bg-white/10 text-white border border-white/20 hover:bg-white/20">
               Sign Out
             </Button>
           </div>
@@ -226,15 +257,20 @@ const DashboardComponent = () => {
                           )}
                           <div className="flex justify-between items-center pt-4 border-t border-white/10">
                             <Button
-                              variant="ghost" 
+                              variant="ghost"
                               className="text-white/70 hover:text-white hover:bg-white/10"
                               onClick={(e) => handleGenerateQR(website.id, e)}
                             >
                               View QR Code
                             </Button>
-                            <span className="text-white/40 text-sm">
-                              Click to manage
-                            </span>
+                            <Button
+                              variant="ghost"
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              onClick={(e) => handleDeleteWebsite(website.id, e)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </Button>
                           </div>
                         </CardContent>
                       </>
