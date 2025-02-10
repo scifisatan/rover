@@ -85,16 +85,13 @@ const FormItem = React.forwardRef<
 FormItem.displayName = "FormItem"
 
 const FormLabel = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
+  HTMLLabelElement,
+  React.HTMLAttributes<HTMLLabelElement>
 >(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField()
-
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-destructive", className)}
-      htmlFor={formItemId}
+      className={cn("text-white/90", className)}
       {...props}
     />
   )
@@ -155,7 +152,7 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
+      className={cn("text-sm font-medium text-rose-500", className)}
       {...props}
     >
       {body}

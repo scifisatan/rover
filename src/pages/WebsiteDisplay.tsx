@@ -9,7 +9,7 @@ import { FeaturesSection } from "@/components/website-display/FeaturesSection";
 import { TeamSection } from "@/components/website-display/TeamSection";
 import { GallerySection } from "@/components/website-display/GallerySection";
 import { SocialMediaSection } from "@/components/website-display/SocialMediaSection";
-
+ 
 const WebsiteDisplay = () => {
   const { businessName } = useParams();
 

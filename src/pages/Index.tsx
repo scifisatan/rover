@@ -1,12 +1,11 @@
-"use client"
-
 import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, ChevronLeft, ChevronRight, Star, Menu, X } from "lucide-react"
+import { ArrowRight, Star, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Marquee } from "@/components/ui/marquee"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 
 function ElegantShape({ className, delay = 0, width = 400, height = 100, rotate = 0, gradient = "from-white/[0.08]" }) {
   return (
@@ -84,22 +83,22 @@ function WebsiteGallery() {
   return (
     <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg bg-black md:shadow-xl">
       <h2 className="text-2xl sm:text-3xl font-bold text-white mb-10 text-center">Our Templates</h2>
-      
+
       <Marquee className="[--duration:20s]">
-      {websites.map((website, index) => (
-            <div key={index} className="flex-shrink-0 snap-center">
-              <img
-                src={website.image || "/placeholder.svg"}
-                alt={website.type}
-                width={300}
-                height={225}
-                className="rounded-lg object-cover"
-              />
-              <p className="text-white mt-2 text-center text-sm sm:text-base">{website.type}</p>
-            </div>
-          ))}
+        {websites.map((website, index) => (
+          <div key={index} className="flex-shrink-0 snap-center">
+            <img
+              src={website.image || "/placeholder.svg"}
+              alt={website.type}
+              width={300}
+              height={225}
+              className="rounded-lg object-cover"
+            />
+            <p className="text-white mt-2 text-center text-sm sm:text-base">{website.type}</p>
+          </div>
+        ))}
       </Marquee>
-      </div>
+    </div>
   );
 }
 
@@ -109,6 +108,7 @@ function WebsiteGallery() {
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const navigate = useNavigate();
+  const { user } = useSupabaseAuth();
 
   useEffect(() => {
     const closeMenu = () => setIsOpen(false)
@@ -122,9 +122,17 @@ function Navbar() {
         <div className="flex justify-between items-center">
           <div className="text-white font-bold text-xl">WebCraft</div>
           <div className="hidden md:flex space-x-4">
-            <Button variant="outline" onClick={()=>{navigate('/auth')}} className="text-black border-white/20">
-              Login
-            </Button>
+
+            {user ? (
+              <Button variant="outline" onClick={() => { navigate('/app') }} className="text-black bg-white border-white/20">
+                Dashboard
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => { navigate('/auth') }} className="text-black bg-white border-white/20">
+                Login
+              </Button>
+            )}
+
           </div>
           <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X /> : <Menu />}
@@ -236,7 +244,7 @@ export default function BusinessWebsiteBuilder() {
             </motion.div>
 
             <motion.div custom={3} variants={fadeUpVariants} initial="hidden" animate="visible">
-              <Button size="lg"  onClick={()=>{navigate('/auth')}} className="bg-white/10 hover:bg-white/15 text-white border border-white/20">
+              <Button onClick={() => { navigate('/auth') }} className="bg-white/10 hover:bg-white/15 text-white border border-white/20">
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
