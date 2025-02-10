@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Sparkles, Send, Upload } from "lucide-react"
 import { BarChart } from "@/components/charts/BarChart"
 import { ScatterPlot } from "@/components/charts/ScatterPlot"
+import { supabase } from "@/lib/supabase"
 
 const AIIcon = () => (
   <motion.div
@@ -63,41 +64,49 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     if (!file) return
 
     try {
-      // Upload image to your storage service and get URL
-      // For example, using Supabase storage
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${self.crypto.randomUUID()}.${fileExt}`
+      // Convert file to base64 for direct use
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
       
-      const { error: uploadError, data } = await supabase.storage
-        .from("business_images")
-        .upload(fileName, file)
+      reader.onload = () => {
+        const base64String = reader.result as string
+        setImageUrl(base64String)
+        console.log('Image uploaded successfully:', base64String.substring(0, 50) + '...');
+      }
 
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("business_images")
-        .getPublicUrl(fileName)
-
-      setImageUrl(publicUrl)
+      reader.onerror = (error) => {
+        console.error('Error reading file:', error)
+        throw new Error('Failed to read file')
+      }
     } catch (error) {
-      console.error("Error uploading image:", error)
+      console.error("Error handling image:", error)
     }
   }
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const handleSendMessage = async () => {
     if (!input.trim()) return
+
+    // Log the outgoing request data
+    console.log('Sending request with data:', {
+      message: input,
+      businessData,
+      imageUrl
+    });
 
     setMessages(prev => [...prev, { text: input, isUser: true }])
     setInput("")
     setIsTyping(true)
 
     try {
-      const response = await fetch("http://localhost:8000/api/chat", { // Update the URL to match your FastAPI server
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
+        mode: "cors", // Explicitly set CORS mode
         body: JSON.stringify({
           message: input,
           businessData,
@@ -106,10 +115,15 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
       })
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error response:", errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: ChatResponse = await response.json()
+      
+      // Log the received response data
+      console.log('Received response:', data);
       
       setMessages(prev => [...prev, {
         text: data.message,
@@ -119,9 +133,9 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
         chartData: data.chartData
       }])
     } catch (error) {
-      console.error("Chat error:", error);
+      console.error("Chat error details:", error);
       setMessages(prev => [...prev, {
-        text: "Sorry, I encountered an error. Please try again.",
+        text: "Sorry, I encountered an error. Please try again. Error: " + (error as Error).message,
         isUser: false
       }])
     } finally {
@@ -129,6 +143,11 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
       setImageUrl(null) // Reset image after sending
     }
   }
+
+  // Log when business data changes
+  React.useEffect(() => {
+    console.log('Business data updated:', businessData);
+  }, [businessData]);
 
   return (
     <div className="flex flex-col h-[600px] bg-white/[0.02] border border-white/[0.08] rounded-xl overflow-hidden backdrop-blur-xl">
@@ -138,7 +157,7 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
           <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300">
             AI Assistant
           </h2>
-          <p className="text-sm text-white/60">Always here to help</p>
+          <p className="text-sm text-white/60">Personal Business Assistant</p>
         </div>
       </div>
 
@@ -161,7 +180,7 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
                   {message.text}
                 </div>
               </div>
-              {message.showChart && message.chartData && (
+              {message.showChart && message.chartData && message.chartData.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -173,10 +192,10 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
                       xDataKey="category"
                       bars={[
                         { dataKey: "value", fill: "#8884d8" },
-                        { dataKey: "comparison", fill: "#82ca9d" }
+                        ...(message.chartData[0]?.comparison !== undefined ? [{ dataKey: "comparison", fill: "#82ca9d" }] : [])
                       ]}
                     />
-                  ) : (
+                  ) : message.chartType === "scatter" ? (
                     <ScatterPlot
                       data={message.chartData}
                       xDataKey="x"
@@ -184,7 +203,7 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
                       name="Data Points"
                       fill="#8884d8"
                     />
-                  )}
+                  ) : null}
                 </motion.div>
               )}
             </motion.div>
@@ -263,4 +282,6 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     </div>
   )
 }
+
+
 
