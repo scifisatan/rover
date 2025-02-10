@@ -1,13 +1,14 @@
+"use client"
 
-import { FC } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import type { FC } from "react"
+import { motion } from "framer-motion"
+import { ArrowUpRight, Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
 
 interface SocialMediaSectionProps {
-  facebookUrl?: string;
-  twitterUrl?: string;
-  instagramUrl?: string;
-  linkedinUrl?: string;
+  facebookUrl?: string
+  twitterUrl?: string
+  instagramUrl?: string
+  linkedinUrl?: string
 }
 
 export const SocialMediaSection: FC<SocialMediaSectionProps> = ({
@@ -16,51 +17,76 @@ export const SocialMediaSection: FC<SocialMediaSectionProps> = ({
   instagramUrl,
   linkedinUrl,
 }) => {
-  if (!facebookUrl && !twitterUrl && !instagramUrl && !linkedinUrl) return null;
+  if (!facebookUrl && !twitterUrl && !instagramUrl && !linkedinUrl) return null
+
+  const socialLinks = [
+    facebookUrl && {
+      name: "Facebook",
+      url: facebookUrl,
+      icon: Facebook,
+      color: "#1877F2",
+      delay: 0.1,
+    },
+    twitterUrl && {
+      name: "Twitter",
+      url: twitterUrl,
+      icon: Twitter,
+      color: "#1DA1F2",
+      delay: 0.2,
+    },
+    instagramUrl && {
+      name: "Instagram",
+      url: instagramUrl,
+      icon: Instagram,
+      color: "#E4405F",
+      delay: 0.3,
+    },
+    linkedinUrl && {
+      name: "LinkedIn",
+      url: linkedinUrl,
+      icon: Linkedin,
+      color: "#0A66C2",
+      delay: 0.4,
+    },
+  ].filter(Boolean)
 
   return (
-    <section className="py-20 bg-gradient-to-t from-secondary/10 to-transparent">
+    <section className="py-20 bg-gradient-to-b from-[#1E293B] to-[#0F172A]">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-semibold mb-12 text-center">Connect With Us</h2>
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-3xl font-semibold mb-12 text-center text-white"
+        >
+          Connect With Us
+        </motion.h2>
+
         <div className="flex flex-wrap justify-center gap-4">
-          {facebookUrl && (
-            <Button variant="outline" asChild className="group hover:bg-[#1877F2]/10">
-              <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <Facebook className="h-4 w-4 group-hover:text-[#1877F2]" />
-                <span className="group-hover:text-[#1877F2]">Facebook</span>
-                <ArrowUpRight className="h-4 w-4 group-hover:text-[#1877F2] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </a>
-            </Button>
-          )}
-          {twitterUrl && (
-            <Button variant="outline" asChild className="group hover:bg-[#1DA1F2]/10">
-              <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <Twitter className="h-4 w-4 group-hover:text-[#1DA1F2]" />
-                <span className="group-hover:text-[#1DA1F2]">Twitter</span>
-                <ArrowUpRight className="h-4 w-4 group-hover:text-[#1DA1F2] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </a>
-            </Button>
-          )}
-          {instagramUrl && (
-            <Button variant="outline" asChild className="group hover:bg-[#E4405F]/10">
-              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <Instagram className="h-4 w-4 group-hover:text-[#E4405F]" />
-                <span className="group-hover:text-[#E4405F]">Instagram</span>
-                <ArrowUpRight className="h-4 w-4 group-hover:text-[#E4405F] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </a>
-            </Button>
-          )}
-          {linkedinUrl && (
-            <Button variant="outline" asChild className="group hover:bg-[#0A66C2]/10">
-              <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <Linkedin className="h-4 w-4 group-hover:text-[#0A66C2]" />
-                <span className="group-hover:text-[#0A66C2]">LinkedIn</span>
-                <ArrowUpRight className="h-4 w-4 group-hover:text-[#0A66C2] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </a>
-            </Button>
-          )}
+          {socialLinks.map((social, index) => (
+            <motion.a
+              key={index}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: social.delay }}
+              viewport={{ once: true }}
+              className="group flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-300"
+              style={{
+                boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.1)`,
+              }}
+            >
+              <social.icon className="h-5 w-5" style={{ color: social.color }} />
+              <span className="text-gray-300 group-hover:text-white transition-colors">{social.name}</span>
+              <ArrowUpRight className="h-4 w-4 text-gray-400 group-hover:text-white group-hover:-translate-y-1 group-hover:translate-x-1 transition-all" />
+            </motion.a>
+          ))}
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
+
