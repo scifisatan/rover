@@ -12,7 +12,6 @@ import { GalleryStep } from "./../../GalleryStep"
 import { ContactStep } from "./../../ContactStep"
 import { SocialMediaStep } from "./../../SocialMediaStep"
 import { ReviewStep } from "./../../ReviewStep"
-import { motion } from "framer-motion"
 import { AnimatedBackground } from "@/components/ui/animated-background"
  
 const STEPS = ["basic", "features", "team", "gallery", "contact", "social", "review"] as const

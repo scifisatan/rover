@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,13 @@ const Auth = () => {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = (location.state as any)?.from?.pathname || "/"
   const { toast } = useToast()
+
+  const handleAuthSuccess = () => {
+    navigate(from, { replace: true })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,7 +43,7 @@ const Auth = () => {
           description: "You have successfully logged in.",
         })
 
-        navigate("/app")
+        handleAuthSuccess()
       } else {
         const { error } = await supabase.auth.signUp({
           email,

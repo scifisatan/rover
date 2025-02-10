@@ -29,14 +29,14 @@ const DashboardComponent = () => {
   const [isCreating, setIsCreating] = useState(false)
   const { user } = useSupabaseAuth()
   const navigate = useNavigate()
-  const [showQR, setShowQR] = useState<number | null>(null)
+  const [showQR, setShowQR] = useState<string | null>(null)
 
-  const handleGenerateQR = (id: number, e: React.MouseEvent) => {
+  const handleGenerateQR = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setShowQR(id)
   }
 
-  const handleDownloadQR = (id: number, businessName: string, e: React.MouseEvent) => {
+  const handleDownloadQR = (id: string, businessName: string, e: React.MouseEvent) => {
     e.stopPropagation()
     const svg = document.getElementById(`QRCode-${id}`)
     if (svg) {
@@ -226,8 +226,7 @@ const DashboardComponent = () => {
                           )}
                           <div className="flex justify-between items-center pt-4 border-t border-white/10">
                             <Button
-                              variant="ghost"
-                              size="sm"
+                              variant="ghost" 
                               className="text-white/70 hover:text-white hover:bg-white/10"
                               onClick={(e) => handleGenerateQR(website.id, e)}
                             >
