@@ -1,4 +1,3 @@
-"use client"
 
 import React from "react"
 import { useState } from "react"
@@ -8,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Sparkles, Send, Upload } from "lucide-react"
 import { BarChart } from "@/components/charts/BarChart"
 import { ScatterPlot } from "@/components/charts/ScatterPlot"
-import { supabase } from "@/lib/supabase"
 
 const AIIcon = () => (
   <motion.div

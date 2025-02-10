@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics: {
+        Row: {
+          facebook_click_count: number | null
+          id: string
+          instagram_click_count: number | null
+          linkedin_click_count: number | null
+          twitter_click_count: number | null
+          visitors: number
+          website_id: string
+        }
+        Insert: {
+          facebook_click_count?: number | null
+          id?: string
+          instagram_click_count?: number | null
+          linkedin_click_count?: number | null
+          twitter_click_count?: number | null
+          visitors?: number
+          website_id: string
+        }
+        Update: {
+          facebook_click_count?: number | null
+          id?: string
+          instagram_click_count?: number | null
+          linkedin_click_count?: number | null
+          twitter_click_count?: number | null
+          visitors?: number
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       website_features: {
         Row: {
           created_at: string
@@ -179,7 +217,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_website_and_related_data: {
+        Args: {
+          website_id: string
+        }
+        Returns: undefined
+      }
+      delete_website_cascade: {
+        Args: {
+          target_website_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
