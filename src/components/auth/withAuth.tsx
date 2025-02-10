@@ -18,7 +18,7 @@ export function withAuth<T extends object>(
 
     if (loading) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="min-h-screexn flex items-center justify-center bg-background">
           <Loader2 className="h-8 w-8 animate-spin text-white/50" />
         </div>
       );
