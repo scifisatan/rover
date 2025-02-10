@@ -7,10 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import {  useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [isCreating, setIsCreating] = useState(false);
   const { user } = useSupabaseAuth();
+  const navigate = useNavigate()
 
   const { data: websites, isLoading } = useQuery({
     queryKey: ['websites', user?.id],
@@ -39,7 +41,7 @@ const Dashboard = () => {
             </Button>
           </div>
           
-          <CreateWebsiteForm  />
+          <CreateWebsiteForm onFormCompletion={setIsCreating}  />
         </div>
       </div>
     );
@@ -65,7 +67,8 @@ const Dashboard = () => {
             </Card>
           ) : websites && websites.length > 0 ? (
             websites.map((website) => (
-              <Card key={website.id} className="hover:shadow-lg transition-shadow">
+            
+              <Card onClick={()=>{navigate('/'+website.business_name)}} key={website.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle>{website.business_name}</CardTitle>
                   {website.tagline && (
@@ -89,6 +92,7 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+          
             ))
           ) : (
             <Card className="hover:shadow-lg transition-shadow">
