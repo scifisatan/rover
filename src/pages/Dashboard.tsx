@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { ChatbotUI } from "@/components/ChatbotUI"
+import { FiUsers, FiEye, FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from "react-icons/fi"
 
 const DashboardComponent = () => {
   const [activeTab, setActiveTab] = useState("websites")
@@ -124,6 +125,13 @@ const DashboardComponent = () => {
   ]
 
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042"]
+
+  const SOCIAL_METRICS = [
+    { name: 'Facebook', key: 'facebook', color: '#4267B2', icon: <FiFacebook /> },
+    { name: 'Instagram', key: 'instagram', color: '#E1306C', icon: <FiInstagram /> },
+    { name: 'LinkedIn', key: 'linkedin', color: '#0077B5', icon: <FiLinkedin /> },
+    { name: 'Twitter', key: 'twitter', color: '#1DA1F2', icon: <FiTwitter /> }
+  ];
 
   if (isCreating) {
     return (
@@ -311,8 +319,9 @@ const DashboardComponent = () => {
                   <CardTitle className="text-white">{website.business_name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="h-[300px] text-white">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Line Chart */}
+                    <div className="col-span-1 h-[400px] text-white">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={analyticsData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -344,7 +353,9 @@ const DashboardComponent = () => {
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="h-[300px] text-white">
+                    
+                    {/* Bar Chart */}
+                    <div className="col-span-1 h-[400px] text-white">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analyticsData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -366,40 +377,73 @@ const DashboardComponent = () => {
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="h-[300px] text-white">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={analyticsData}
-                            dataKey="facebook"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            fill="#8884d8"
-                            label
+
+                    {/* Pie Chart with Legend */}
+                    <div className="col-span-1 h-[400px] text-white flex flex-col">
+                      <div className="flex-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={SOCIAL_METRICS.map(metric => ({
+                                name: metric.name,
+                                value: analyticsData[analyticsData.length - 1][metric.key]
+                              }))}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={60}
+                              outerRadius={80}
+                              paddingAngle={5}
+                              dataKey="value"
+                            >
+                              {SOCIAL_METRICS.map((metric, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={metric.color}
+                                  strokeWidth={2}
+                                  stroke="rgba(255,255,255,0.1)"
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload;
+                                  return (
+                                    <div className="bg-black/80 backdrop-blur-sm border border-white/10 p-3 rounded-lg shadow-xl">
+                                      <p className="text-white font-semibold">{data.name}</p>
+                                      <p className="text-white/80">
+                                        {data.value.toLocaleString()} interactions
+                                      </p>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      {/* Legend below pie chart */}
+                      <div className="mt-4 space-y-2">
+                        {SOCIAL_METRICS.map((metric) => (
+                          <div 
+                            key={metric.name}
+                            className="flex items-center gap-2 text-sm hover:bg-white/5 p-2 rounded-lg transition-colors"
                           >
-                            {analyticsData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Pie
-                            data={analyticsData}
-                            dataKey="instagram"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={90}
-                            outerRadius={110}
-                            fill="#82ca9d"
-                            label
-                          >
-                            {analyticsData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
+                            <div className="flex items-center gap-2 min-w-[24px]">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: metric.color }}
+                              />
+                              {metric.icon}
+                            </div>
+                            <span className="flex-1">{metric.name}</span>
+                            <span className="font-mono opacity-80">
+                              {analyticsData[analyticsData.length - 1][metric.key].toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
