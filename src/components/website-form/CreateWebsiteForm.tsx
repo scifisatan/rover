@@ -17,11 +17,11 @@ import { useNavigate } from "react-router-dom";
 const STEPS = ["basic", "features", "team", "gallery", "contact", "social"] as const;
 type Step = (typeof STEPS)[number];
 
-export const CreateWebsiteForm = () => {
+export const CreateWebsiteForm = ({onFormCompletion}) => {
   const [currentStep, setCurrentStep] = useState<Step>("basic");
   const [websiteId, setWebsiteId] = useState<string | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
+ 
 
   const currentStepIndex = STEPS.indexOf(currentStep);
   const isFirstStep = currentStepIndex === 0;
@@ -104,11 +104,12 @@ export const CreateWebsiteForm = () => {
       }
 
       if (isLastStep) {
+        onFormCompletion("false")
         toast({
           title: "Website completed!",
           description: "Your website has been created successfully.",
         });
-        navigate("/app");
+       
       } else {
         goToNextStep();
       }

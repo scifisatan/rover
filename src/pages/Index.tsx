@@ -6,6 +6,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Star, Menu, X } from "lucide-rea
 import { cn } from "@/lib/utils"
 import { Marquee } from "@/components/ui/marquee"
 import { Button } from "@/components/ui/button"
+import { useNavigate } from "react-router-dom"
 
 function ElegantShape({ className, delay = 0, width = 400, height = 100, rotate = 0, gradient = "from-white/[0.08]" }) {
   return (
@@ -47,9 +48,6 @@ function FeatureCard({ title, description, delay = 0 }) {
     >
       <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm">
         <div className="flex flex-col gap-4">
-          <div className="h-10 w-10 rounded-lg bg-white/[0.05] flex items-center justify-center border border-white/[0.08]">
-            <ArrowRight className="h-5 w-5 text-white/60" />
-          </div>
           <h3 className="text-xl font-semibold text-white/90">{title}</h3>
           <p className="text-white/60 leading-relaxed">{description}</p>
         </div>
@@ -110,6 +108,7 @@ function WebsiteGallery() {
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const navigate = useNavigate();
 
   useEffect(() => {
     const closeMenu = () => setIsOpen(false)
@@ -123,16 +122,7 @@ function Navbar() {
         <div className="flex justify-between items-center">
           <div className="text-white font-bold text-xl">WebCraft</div>
           <div className="hidden md:flex space-x-4">
-            <Button variant="ghost" className="text-white">
-              Features
-            </Button>
-            <Button variant="ghost" className="text-white">
-              Templates
-            </Button>
-            <Button variant="ghost" className="text-white">
-              Pricing
-            </Button>
-            <Button variant="outline" className="text-white border-white/20">
+            <Button variant="outline" onClick={()=>{navigate('/auth')}} className="text-black border-white/20">
               Login
             </Button>
           </div>
@@ -164,6 +154,7 @@ function Navbar() {
 }
 
 export default function BusinessWebsiteBuilder() {
+  const navigate = useNavigate()
   const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: (i) => ({
@@ -245,7 +236,7 @@ export default function BusinessWebsiteBuilder() {
             </motion.div>
 
             <motion.div custom={3} variants={fadeUpVariants} initial="hidden" animate="visible">
-              <Button size="lg" className="bg-white/10 hover:bg-white/15 text-white border border-white/20">
+              <Button size="lg"  onClick={()=>{navigate('/auth')}} className="bg-white/10 hover:bg-white/15 text-white border border-white/20">
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
