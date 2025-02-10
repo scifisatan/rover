@@ -1,5 +1,3 @@
-"use client"
-
 import type { FC } from "react"
 import { motion } from "framer-motion"
 import { ArrowUpRight, Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
@@ -9,6 +7,7 @@ interface SocialMediaSectionProps {
   twitterUrl?: string
   instagramUrl?: string
   linkedinUrl?: string
+  handleSocialClick?: (platform: string) => void; // Ensure proper function type
 }
 
 export const SocialMediaSection: FC<SocialMediaSectionProps> = ({
@@ -16,6 +15,7 @@ export const SocialMediaSection: FC<SocialMediaSectionProps> = ({
   twitterUrl,
   instagramUrl,
   linkedinUrl,
+  handleSocialClick
 }) => {
   if (!facebookUrl && !twitterUrl && !instagramUrl && !linkedinUrl) return null
 
@@ -78,6 +78,7 @@ export const SocialMediaSection: FC<SocialMediaSectionProps> = ({
               style={{
                 boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.1)`,
               }}
+              onClick={() => handleSocialClick && handleSocialClick(social.name)} // Move tracking here
             >
               <social.icon className="h-5 w-5" style={{ color: social.color }} />
               <span className="text-gray-300 group-hover:text-white transition-colors">{social.name}</span>
@@ -89,4 +90,3 @@ export const SocialMediaSection: FC<SocialMediaSectionProps> = ({
     </section>
   )
 }
-
