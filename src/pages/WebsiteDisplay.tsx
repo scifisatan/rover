@@ -19,7 +19,28 @@ const WebsiteDisplay = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("websites")
-        .select("*")
+        .select(`
+          *,
+          website_features (
+            id,
+            title,
+            description,
+            display_order
+          ),
+          website_team_members (
+            id,
+            name,
+            role,
+            image_url,
+            display_order
+          ),
+          website_gallery_images (
+            id,
+            image_url,
+            caption,
+            display_order
+          )
+        `)
         .ilike("business_name", businessName!)
         .maybeSingle();
 
@@ -29,7 +50,7 @@ const WebsiteDisplay = () => {
     },
   });
 
-  // Mutation to update analytics
+  
   // Mutation to update analytics
   const updateAnalytics = useMutation({
     mutationFn: async () => {
