@@ -25,7 +25,7 @@ export const SocialMediaStep = ({ onComplete, initialData }) => {
       linkedin_url: "",
     },
   })
-
+ 
   // Add auto-save
   React.useEffect(() => {
     const subscription = form.watch((value) => {

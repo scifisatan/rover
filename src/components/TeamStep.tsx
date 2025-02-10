@@ -70,7 +70,7 @@ export const TeamStep = ({ onComplete, initialData }) => {
       })
     }
   }
-
+ 
   return (
     <Form {...form}>
       <div className="space-y-6">
@@ -79,11 +79,11 @@ export const TeamStep = ({ onComplete, initialData }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Team Member {index + 1}</h3>
               {fields.length > 1 && (
-                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}>
+                <Button type="button" variant="destructive" onClick={() => remove(index)}>
                   <Trash className="h-4 w-4" />
                 </Button>
               )}
-            </div>
+            </div> 
             {["name", "role"].map((fieldName: "name" | "role") => (
               <FormField
                 key={fieldName}

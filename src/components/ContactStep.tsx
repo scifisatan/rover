@@ -14,7 +14,7 @@ const formSchema = z.object({
   map_latitude: z.string().optional(),
   map_longitude: z.string().optional(),
 })
-
+ 
 type FormValues = z.infer<typeof formSchema>
 
 export const ContactStep = ({ onComplete }) => {

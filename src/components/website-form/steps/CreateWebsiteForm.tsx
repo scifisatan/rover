@@ -12,10 +12,12 @@ import { GalleryStep } from "./../../GalleryStep"
 import { ContactStep } from "./../../ContactStep"
 import { SocialMediaStep } from "./../../SocialMediaStep"
 import { ReviewStep } from "./../../ReviewStep"
-
+import { motion } from "framer-motion"
+import { AnimatedBackground } from "@/components/ui/animated-background"
+ 
 const STEPS = ["basic", "features", "team", "gallery", "contact", "social", "review"] as const
 type Step = (typeof STEPS)[number]
-
+ 
 export const CreateWebsiteForm = ({ onFormCompletion }) => {
   const [currentStep, setCurrentStep] = useState<Step>("basic")
   const [formData, setFormData] = useState({
@@ -137,41 +139,69 @@ export const CreateWebsiteForm = ({ onFormCompletion }) => {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto p-6">
-      <Tabs value={currentStep} className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
-          {STEPS.map((step) => (
-            <TabsTrigger key={step} value={step}>
-              {step.charAt(0).toUpperCase() + step.slice(1)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContent value={currentStep}>{renderStepContent()}</TabsContent>
-      </Tabs>
+    <div className="relative min-h-screen w-full">
+      <AnimatedBackground />
+      
+      {/* Form Container with enhanced glass effect */}
+      <div className="relative z-10 min-h-screen py-8 px-4">
+        <Card className="max-w-5xl mx-auto bg-white/[0.02] border-white/[0.05] shadow-2xl 
+          backdrop-blur-xl rounded-xl overflow-hidden
+          before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent before:pointer-events-none
+          hover:border-white/[0.08] transition-all duration-500">
+          <Tabs value={currentStep} className="w-full">
+            <TabsList className="grid w-full grid-cols-7 bg-black/40 border-b border-white/[0.08]
+              backdrop-blur-sm">
+              {STEPS.map((step) => (
+                <TabsTrigger 
+                  key={step} 
+                  value={step}
+                  className="text-white/60 transition-all duration-200 
+                    data-[state=active]:text-white 
+                    data-[state=active]:bg-white/[0.08]
+                    data-[state=active]:shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]
+                    hover:text-white/90 hover:bg-white/[0.04]"
+                >
+                  {step.charAt(0).toUpperCase() + step.slice(1)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value={currentStep} className="p-8 relative z-10">{renderStepContent()}</TabsContent>
+          </Tabs>
 
-      {currentStep !== "review" && (
-        <div className="flex justify-between mt-6">
-          <Button variant="outline" onClick={goToPreviousStep} disabled={isFirstStep}>
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={goToNextStep} 
-            disabled={isLastStep}
-          >
-            {currentStep === "social" ? (
-              "Complete"
-            ) : (
-              <>
-                Next
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-    </Card>
+          {currentStep !== "review" && (
+            <div className="flex justify-between px-8 pb-8">
+              <Button 
+                variant="outline" 
+                onClick={goToPreviousStep} 
+                disabled={isFirstStep}
+                className="bg-white/[0.03] text-white border-white/10 
+                  hover:bg-white/[0.08] hover:border-white/20 
+                  transition-all duration-300
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={goToNextStep} 
+                disabled={isLastStep}
+                className="bg-white/[0.03] text-white border-white/10 
+                  hover:bg-white/[0.08] hover:border-white/20
+                  transition-all duration-300
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+              >
+                {currentStep === "social" ? "Complete" : (
+                  <>Next <ChevronRight className="ml-2 h-4 w-4" /></>
+                )}
+              </Button>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
   )
 }
 

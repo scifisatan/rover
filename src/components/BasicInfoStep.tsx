@@ -14,7 +14,7 @@ const formSchema = z.object({
   tagline: z.string().optional(),
   description: z.string().optional(),
 })
-
+ 
 type FormValues = z.infer<typeof formSchema>
 
 export const BasicInfoStep = ({ onComplete, initialData }) => {

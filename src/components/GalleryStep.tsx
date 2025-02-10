@@ -18,7 +18,7 @@ const imageSchema = z.object({
 const formSchema = z.object({
   images: z.array(imageSchema).min(1, "Add at least one image"),
 })
-
+ 
 type FormValues = z.infer<typeof formSchema>
 
 export const GalleryStep = ({ onComplete, initialData }) => {
@@ -28,7 +28,7 @@ export const GalleryStep = ({ onComplete, initialData }) => {
     defaultValues: initialData || {
       images: [{ image_url: "", caption: "", display_order: 0 }],
     },
-  })
+  }) 
 
   // Add auto-save effect
   React.useEffect(() => {
@@ -82,7 +82,7 @@ export const GalleryStep = ({ onComplete, initialData }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Image {index + 1}</h3>
               {fields.length > 1 && (
-                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}>
+                <Button type="button" variant="destructive" onClick={() => remove(index)}>
                   <Trash className="h-4 w-4" />
                 </Button>
               )}
