@@ -27,10 +27,11 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 # CORS middleware setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Add all frontend URLs
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins in development
+    allow_credentials=False,  # Set to False when using allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Add request logging middleware
@@ -48,78 +49,169 @@ async def log_requests(request: Request, call_next):
 class ChatRequest(BaseModel):
     message: str
     businessData: Dict[str, Any]
-    imageUrl: Optional[str] = None
+    imageUrl: Optional[str] = None  # This will now accept base64 strings
 
-def analyze_image(image_url: str):
-    client = ImageAnalysisClient(
-        endpoint=AZURE_ENDPOINT,
-        credential=AzureKeyCredential(AZURE_KEY)
-    )
-    
-    result = client.analyze_from_url(
-        image_url=image_url,
-        visual_features=[VisualFeatures.CAPTION, VisualFeatures.READ],
-    )
-    
-    text_content = ""
-    if result.read:
-        for block in result.read.blocks:
-            for line in block.lines:
-                text_content += line.text + " "
-    
-    return {
-        "caption": result.caption.text if result.caption else "",
-        "text_content": text_content
-    }
+def analyze_image(image_base64: str):
+    try:
+        if ',' in image_base64:
+            image_base64 = image_base64.split(',')[1]
+            
+        import base64
+        import requests
+
+        # Correct Azure Vision API endpoint
+        url = f"{AZURE_ENDPOINT}computervision/imageanalysis:analyze"  # Updated endpoint
+
+        # Query parameters
+        params = {
+            'api-version': '2023-04-01-preview',
+            'features': 'caption,read,tags,objects',
+            'model-version': 'latest',
+            'language': 'en'
+        }
+
+        # Headers
+        headers = {
+            'Content-Type': 'application/octet-stream',
+            'Ocp-Apim-Subscription-Key': AZURE_KEY
+        }
+
+        # Decode and send image
+        image_data = base64.b64decode(image_base64)
+        
+        logger.info(f"Sending request to Azure Vision API: {url}")
+        response = requests.post(url, params=params, headers=headers, data=image_data)
+
+        if response.status_code != 200:
+            logger.error(f"Azure Vision API response: {response.status_code} - {response.text}")
+            raise Exception(f"Azure Vision API error: {response.text}")
+
+        result = response.json()
+        logger.info("Got response from Azure Vision API")
+        
+        # Extract results
+        analysis = {
+            "caption": result.get('captionResult', {}).get('text', ''),
+            "text_content": " ".join([
+                line.get('text', '')
+                for block in result.get('readResult', {}).get('blocks', [])
+                for line in block.get('lines', [])
+            ]),
+            "tags": [tag.get('name') for tag in result.get('tagsResult', {}).get('values', [])],
+            "objects": [obj.get('name') for obj in result.get('objectsResult', {}).get('values', [])]
+        }
+        
+        logger.info("Image analysis completed successfully")
+        return analysis
+            
+    except Exception as e:
+        logger.error(f"Image analysis error: {str(e)}")
+        return {
+            "caption": "Failed to analyze image",
+            "text_content": f"Error: {str(e)}",
+            "tags": [],
+            "objects": []
+        }
 
 def process_with_gemini(business_data: dict, user_message: str, image_analysis: Optional[dict] = None):
-    prompt = f"""
-    You are a specialized AI business consultant. Analyze the following data and provide actionable insights:
-
-    Business Data:
-    {json.dumps(business_data, indent=2)}
-
-    User Query: {user_message}
-
-    {f'Image Analysis: {json.dumps(image_analysis, indent=2)}' if image_analysis else ''}
-
-    Provide your response in JSON format with this structure:
-    {{
-        "message": "Your detailed response",
-        "showChart": boolean,
-        "chartType": "bar|scatter|none",
-        "chartData": [] // Include if showChart is true
-    }}
-
-    Focus on business-related advice and analytics insights. If asked about non-business topics,
-    redirect the conversation to business matters.
-    """
-
-    response = model.generate_content(prompt)
-    raw_text = response.text.strip()
-    
-    # Clean up the response if it contains markdown code blocks
-    if raw_text.startswith("```json") and raw_text.endswith("```"):
-        raw_text = raw_text[7:-3].strip()
-    
     try:
-        return json.loads(raw_text)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse response as JSON: {e}. Response: {raw_text}")
+        # Prepare image analysis text, handling None values
+        image_context = ""
+        if image_analysis:
+            image_context = f"""
+            IMAGE ANALYSIS RESULTS:
+            - Description: {str(image_analysis.get('caption', 'No caption available'))}
+            - Detected Text: {str(image_analysis.get('text_content', 'No text detected'))}
+            - Identified Objects: {', '.join(str(obj) for obj in image_analysis.get('objects', []) if obj)}
+            - Tags: {', '.join(str(tag) for tag in image_analysis.get('tags', []) if tag)}
+            """
+
+        # Create the prompt with safe string handling
+        prompt = f"""
+        You are a specialized AI business consultant. I'm providing you with business data and user query.
+        
+        STRICT CHART RULES:
+        1. ONLY show charts for numerical data analysis
+        2. Dont show charts when not asked
+        3. For BAR charts use format:
+           "chartData": [
+             {{"category": "Label1", "value": number1}},
+             {{"category": "Label2", "value": number2}}
+           ]
+        4. For SCATTER charts use format:
+           "chartData": [
+             {{"x": number1, "y": number2}},
+             {{"x": number3, "y": number4}}
+           ]
+
+        {image_context if image_analysis else ""}
+
+        BUSINESS CONTEXT:
+        {json.dumps(business_data, indent=2, default=str)}
+
+        USER QUERY:
+        {str(user_message)}
+
+        Respond with valid JSON in this format:
+        {{
+            "message": "Your response here",
+            "showChart": false,
+            "chartType": "none",
+            "chartData": []
+        }}
+        """
+
+        logger.info("Sending prompt to Gemini...")
+        response = model.generate_content(prompt)
+        
+        if not response or not response.text:
+            raise ValueError("Empty response from Gemini")
+            
+        raw_text = response.text.strip()
+        
+        # Clean up response
+        if raw_text.startswith("```json") and raw_text.endswith("```"):
+            raw_text = raw_text[7:-3].strip()
+        
+        # Parse and validate response
+        parsed_response = json.loads(raw_text)
+        
+        # Ensure all required fields exist
+        required_fields = {
+            "message": str,
+            "showChart": bool,
+            "chartType": str,
+            "chartData": list
+        }
+        
+        for field, field_type in required_fields.items():
+            if field not in parsed_response or not isinstance(parsed_response[field], field_type):
+                parsed_response[field] = field_type()
+        
+        return parsed_response
+
+    except Exception as e:
+        logger.error(f"Gemini processing error: {str(e)}")
+        return {
+            "message": "I apologize, but I couldn't process that request properly. Please try again.",
+            "showChart": False,
+            "chartType": "none",
+            "chartData": []
+        }
+
+@app.options("/api/chat")
+async def options_handler():
+    return {}
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
+    logger.info(f"Received chat request with message: {request.message}")
     try:
-        logger.info(f"Received chat request with message: {request.message}")
-        
         image_analysis = None
         if request.imageUrl:
-            logger.info(f"Processing image from URL: {request.imageUrl}")
-            try:
-                image_analysis = analyze_image(request.imageUrl)
-            except Exception as e:
-                logger.error(f"Image analysis error: {str(e)}")
-                # Continue without image analysis
+            logger.info("Image URL received, processing...")
+            image_analysis = analyze_image(request.imageUrl)
+            logger.info(f"Image analysis results: {json.dumps(image_analysis)}")
         
         response = process_with_gemini(
             business_data=request.businessData,
@@ -127,10 +219,12 @@ async def chat(request: ChatRequest):
             image_analysis=image_analysis
         )
         
-        logger.info("Successfully processed request")
+        # Log the final response
+        logger.info(f"Sending response: {json.dumps(response)}")
         return response
+        
     except Exception as e:
-        logger.error(f"Chat error: {str(e)}")
+        logger.error(f"Error in chat endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Add health check endpoint

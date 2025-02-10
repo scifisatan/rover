@@ -171,7 +171,7 @@ const Dashboard = () => {
                     className="bg-white/[0.06] border-white/[0.12] backdrop-blur-md shadow-xl 
                       hover:bg-white/[0.08] transition-all cursor-pointer group"
                   >
-                    {showQR === website.id ? (
+                    {showQR === Number(website.id) ? (
                       <CardContent className="p-6">
                         <div className="flex flex-col items-center space-y-4">
                           <div className="bg-white p-4 rounded-xl">
@@ -184,7 +184,7 @@ const Dashboard = () => {
                           <div className="flex space-x-2">
                             <Button
                               variant="outline"
-                              onClick={(e) => handleDownloadQR(website.id, website.business_name, e)}
+                              onClick={(e) => handleDownloadQR(Number(website.id), website.business_name, e)}
                               className="text-white bg-white/10 hover:bg-white/20"
                             >
                               Download QR
@@ -223,9 +223,8 @@ const Dashboard = () => {
                           <div className="flex justify-between items-center pt-4 border-t border-white/10">
                             <Button
                               variant="ghost"
-                              size="sm"
                               className="text-white/70 hover:text-white hover:bg-white/10"
-                              onClick={(e) => handleGenerateQR(website.id, e)}
+                              onClick={(e) => handleGenerateQR(Number(website.id), e)}
                             >
                               View QR Code
                             </Button>
