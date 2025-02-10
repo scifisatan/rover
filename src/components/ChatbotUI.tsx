@@ -81,7 +81,7 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     }
   }
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const API_URL = import.meta.env.VITE_CHATBOT_URL;
 
   const handleSendMessage = async () => {
     if (!input.trim()) return
@@ -98,7 +98,7 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     setIsTyping(true)
 
     try {
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const response = await fetch(`${API_URL}api/chat`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
