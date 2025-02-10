@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +16,11 @@ import { useNavigate } from "react-router-dom";
 const STEPS = ["basic", "features", "team", "gallery", "contact", "social"] as const;
 type Step = (typeof STEPS)[number];
 
-export const CreateWebsiteForm = ({onFormCompletion}) => {
+type CreateWebsiteFormProps = {
+  onFormCompletion: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export const CreateWebsiteForm = ({ onFormCompletion }: CreateWebsiteFormProps) => {
   const [currentStep, setCurrentStep] = useState<Step>("basic");
   const [websiteId, setWebsiteId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -37,6 +40,14 @@ export const CreateWebsiteForm = ({onFormCompletion}) => {
     if (!isFirstStep) {
       setCurrentStep(STEPS[currentStepIndex - 1]);
     }
+  };
+
+  const handleComplete = () => {
+    toast({
+      title: "Website completed!",
+      description: "Your website has been created successfully.",
+    });
+    onFormCompletion(false);
   };
 
   const onStepComplete = async (stepData: any) => {
@@ -104,12 +115,7 @@ export const CreateWebsiteForm = ({onFormCompletion}) => {
       }
 
       if (isLastStep) {
-        onFormCompletion("false")
-        toast({
-          title: "Website completed!",
-          description: "Your website has been created successfully.",
-        });
-       
+        handleComplete();
       } else {
         goToNextStep();
       }
@@ -169,14 +175,23 @@ export const CreateWebsiteForm = ({onFormCompletion}) => {
           Previous
         </Button>
 
-        <Button
-          variant="outline"
-          onClick={goToNextStep}
-          disabled={isLastStep || !websiteId}
-        >
-          Next
-          <ChevronRight className="ml-2 h-4 w-4" />
-        </Button>
+        {isLastStep ? (
+          <Button
+            variant="default"
+            onClick={handleComplete}
+          >
+            Complete
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={goToNextStep}
+            disabled={!websiteId}
+          >
+            Next
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        )}
       </div>
     </Card>
   );

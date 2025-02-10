@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateWebsiteForm } from "@/components/website-form/CreateWebsiteForm";
@@ -14,7 +13,7 @@ const Dashboard = () => {
   const { user } = useSupabaseAuth();
   const navigate = useNavigate()
 
-  const { data: websites, isLoading } = useQuery({
+  const { data: websites, isLoading, refetch } = useQuery({
     queryKey: ['websites', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -41,7 +40,7 @@ const Dashboard = () => {
             </Button>
           </div>
           
-          <CreateWebsiteForm onFormCompletion={setIsCreating}  />
+          <CreateWebsiteForm onFormCompletion={setIsCreating} />
         </div>
       </div>
     );

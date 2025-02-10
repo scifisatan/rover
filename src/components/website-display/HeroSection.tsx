@@ -62,10 +62,6 @@
 //     </section>
 //   )
 // }
-
-
-"use client";
-
 import { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
