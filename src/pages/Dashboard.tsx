@@ -27,6 +27,16 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { ChatbotUI } from "@/components/ChatbotUI"
 import { FiUsers, FiEye, FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from "react-icons/fi"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { User, Settings, LogOut } from "lucide-react"
 
 const DashboardComponent = () => {
   const [activeTab, setActiveTab] = useState("websites")
@@ -170,7 +180,6 @@ const DashboardComponent = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <div className="flex space-x-4">
-
             <Button
               onClick={() => setIsCreating(true)}
               className="bg-white/10 text-white border border-white/20 hover:bg-white/20"
@@ -178,9 +187,44 @@ const DashboardComponent = () => {
               <Plus className="mr-2 h-4 w-4" />
               Create Website
             </Button>
-            <Button onClick={() => { supabase.auth.signOut(); navigate("/") }} className="bg-white/10 text-white border border-white/20 hover:bg-white/20">
-              Sign Out
-            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-white/10 hover:bg-white/20">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-white/10 backdrop-blur-lg border-white/20 text-white" align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{user?.user_metadata?.full_name || 'User'}</p>
+                    <p className="text-xs text-white/70 truncate">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/20" />
+                <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/20 cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/20 cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/20" />
+                <DropdownMenuItem 
+                  className="hover:bg-red-500/10 focus:bg-red-500/20 cursor-pointer text-red-400 hover:text-red-300"
+                  onClick={() => { supabase.auth.signOut(); navigate("/") }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 

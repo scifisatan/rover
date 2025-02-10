@@ -18,6 +18,7 @@ export default {
 			}
 		},
 		extend: {
+			
 
 			colors: {
 				border: 'hsl(var(--border))',

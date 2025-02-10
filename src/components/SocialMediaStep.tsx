@@ -11,7 +11,7 @@ const formSchema = z.object({
   instagram_url: z.string().url("Invalid URL").optional().or(z.literal("")),
   linkedin_url: z.string().url("Invalid URL").optional().or(z.literal("")),
 })
- 
+  
 type FormValues = z.infer<typeof formSchema>
 
 export const SocialMediaStep = ({ onComplete, initialData }) => {

@@ -3,7 +3,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Sparkles, Send, Upload } from "lucide-react"
+import { Sparkles, Send, Upload, X, MessageCircle } from "lucide-react"
 import { BarChart } from "@/components/charts/BarChart"
 import { ScatterPlot } from "@/components/charts/ScatterPlot"
 
@@ -48,6 +48,7 @@ interface Message {
   showChart?: boolean
   chartData?: any
   chartType?: "bar" | "scatter"
+  imageUrl?: string  // Add this new property
 }
 
 export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => {
@@ -55,6 +56,11 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [isVisible, setIsVisible] = useState(true)
+
+  const handleClose = () => {
+    setIsVisible(false)
+  }
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -69,6 +75,12 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
         const base64String = reader.result as string
         setImageUrl(base64String)
         console.log('Image uploaded successfully:', base64String.substring(0, 50) + '...');
+        // Add image message to chat
+        setMessages(prev => [...prev, {
+          text: "Uploaded an image",
+          isUser: true,
+          imageUrl: base64String
+        }])
       }
 
       reader.onerror = (error) => {
@@ -80,30 +92,20 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     }
   }
 
-  const API_URL = import.meta.env.VITE_CHATBOT_URL;
-
   const handleSendMessage = async () => {
     if (!input.trim()) return
-
-    // Log the outgoing request data
-    console.log('Sending request with data:', {
-      message: input,
-      businessData,
-      imageUrl
-    });
 
     setMessages(prev => [...prev, { text: input, isUser: true }])
     setInput("")
     setIsTyping(true)
 
     try {
-      const response = await fetch(`${API_URL}api/chat`, {
+      const response = await fetch('http://localhost:8000/api/chat', {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        mode: "cors", // Explicitly set CORS mode
         body: JSON.stringify({
           message: input,
           businessData,
@@ -112,8 +114,6 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
       })
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server error response:", errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -132,7 +132,7 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     } catch (error) {
       console.error("Chat error details:", error);
       setMessages(prev => [...prev, {
-        text: "Sorry, I encountered an error. Please try again. Error: " + (error as Error).message,
+        text: "Sorry, I'm having trouble connecting to the server. Please make sure the server is running on port 8000.",
         isUser: false
       }])
     } finally {
@@ -146,16 +146,38 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
     console.log('Business data updated:', businessData);
   }, [businessData]);
 
+  if (!isVisible) {
+    return (
+      <Button
+        onClick={() => setIsVisible(true)}
+        className="fixed bottom-4 right-4 rounded-lg bg-primary hover:bg-primary/90 p-3 shadow-lg"
+      >
+        <MessageCircle className="h-5 w-5" />
+        <span className="ml-2">Open Chat</span>
+      </Button>
+    )
+  }
+
   return (
     <div className="flex flex-col h-[600px] bg-white/[0.02] border border-white/[0.08] rounded-xl overflow-hidden backdrop-blur-xl">
-      <div className="flex items-center p-4 bg-white/[0.06] border-b border-white/[0.08]">
-        <AIIcon />
-        <div className="ml-3">
-          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300">
-            AI Assistant
-          </h2>
-          <p className="text-sm text-white/60">Personal Business Assistant</p>
+      <div className="flex items-center justify-between p-4 bg-white/[0.06] border-b border-white/[0.08]">
+        <div className="flex items-center">
+          <AIIcon />
+          <div className="ml-3">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300">
+              AI Assistant
+            </h2>
+            <p className="text-sm text-white/60">Personal Business Assistant</p>
+          </div>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClose}
+          className="h-8 w-8 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </Button>
       </div>
 
       <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
@@ -174,7 +196,18 @@ export const ChatbotUI: React.FC<{ businessData: any }> = ({ businessData }) => 
                     ? "bg-gradient-to-r from-violet-600/80 to-purple-600/80 text-white ml-12" 
                     : "bg-white/[0.06] border border-white/[0.08] text-white/90 mr-12"}`}
                 >
-                  {message.text}
+                  {message.imageUrl ? (
+                    <div className="space-y-2">
+                      <img 
+                        src={message.imageUrl} 
+                        alt="Uploaded content" 
+                        className="rounded-lg max-h-[200px] object-cover"
+                      />
+                      <p className="text-sm text-white/80">{message.text}</p>
+                    </div>
+                  ) : (
+                    message.text
+                  )}
                 </div>
               </div>
               {message.showChart && message.chartData && message.chartData.length > 0 && (

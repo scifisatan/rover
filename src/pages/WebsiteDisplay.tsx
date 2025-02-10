@@ -9,6 +9,7 @@ import { FeaturesSection } from "@/components/website-display/FeaturesSection";
 import { TeamSection } from "@/components/website-display/TeamSection";
 import { GallerySection } from "@/components/website-display/GallerySection";
 import { SocialMediaSection } from "@/components/website-display/SocialMediaSection";
+import { ChatBot } from "@/components/website-display/ChatBot";
 
 const WebsiteDisplay = () => {
   const { businessName } = useParams();
@@ -184,6 +185,7 @@ const WebsiteDisplay = () => {
         linkedinUrl={website.linkedin_url}
         handleSocialClick={handleSocialClick} // Pass click handler
       />
+      <ChatBot websiteData={website} />
     </div>
   );
 };

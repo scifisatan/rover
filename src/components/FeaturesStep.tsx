@@ -17,7 +17,7 @@ const featureSchema = z.object({
 const formSchema = z.object({
   features: z.array(featureSchema).min(1, "Add at least one feature"),
 })
- 
+  
 type FormValues = z.infer<typeof formSchema>
 
 export const FeaturesStep = ({ onComplete }) => {

@@ -19,7 +19,7 @@ const memberSchema = z.object({
 const formSchema = z.object({
   members: z.array(memberSchema),
 })
-
+ 
 type FormValues = z.infer<typeof formSchema>
 
 export const TeamStep = ({ onComplete, initialData }) => {

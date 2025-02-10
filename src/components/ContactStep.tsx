@@ -13,7 +13,7 @@ const formSchema = z.object({
   address: z.string().optional(),
   map_latitude: z.string().optional(),
   map_longitude: z.string().optional(),
-})
+}) 
  
 type FormValues = z.infer<typeof formSchema>
 

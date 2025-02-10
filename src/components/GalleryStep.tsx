@@ -18,7 +18,7 @@ const imageSchema = z.object({
 const formSchema = z.object({
   images: z.array(imageSchema).min(1, "Add at least one image"),
 })
- 
+  
 type FormValues = z.infer<typeof formSchema>
 
 export const GalleryStep = ({ onComplete, initialData }) => {
