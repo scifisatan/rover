@@ -1,7 +1,10 @@
-import { useState, useRef } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
-import { ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react"
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+import { motion } from "framer-motion"
+import { ArrowRight, ChevronLeft, ChevronRight, Star, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Marquee } from "@/components/ui/marquee"
 import { Button } from "@/components/ui/button"
 
 function ElegantShape({ className, delay = 0, width = 400, height = 100, rotate = 0, gradient = "from-white/[0.08]" }) {
@@ -73,9 +76,6 @@ function Testimonial({ name, role, quote }) {
 }
 
 function WebsiteGallery() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const scrollRef = useRef(null)
-
   const websites = [
     { type: "Restaurant", image: "/placeholder.svg?height=300&width=400" },
     { type: "E-commerce", image: "/placeholder.svg?height=300&width=400" },
@@ -83,69 +83,46 @@ function WebsiteGallery() {
     { type: "Blog", image: "/placeholder.svg?height=300&width=400" },
     { type: "Fitness Studio", image: "/placeholder.svg?height=300&width=400" },
   ]
-
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const scrollAmount = direction === "left" ? -400 : 400
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
-    }
-  }
-
   return (
-    <div className="relative">
-      <h2 className="text-3xl font-bold text-white mb-6">Website Templates</h2>
-      <div className="relative overflow-hidden" style={{ width: "100%", height: "350px" }}>
-        <div ref={scrollRef} className="flex gap-4 overflow-x-auto pb-4" style={{ width: "100%", height: "100%" }}>
-          {websites.map((website, index) => (
-            <div key={index} className="flex-shrink-0">
+    <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg bg-black md:shadow-xl">
+      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-10 text-center">Our Templates</h2>
+      
+      <Marquee className="[--duration:20s]">
+      {websites.map((website, index) => (
+            <div key={index} className="flex-shrink-0 snap-center">
               <img
                 src={website.image || "/placeholder.svg"}
                 alt={website.type}
-                width={400}
-                height={300}
-                className="rounded-lg"
+                width={300}
+                height={225}
+                className="rounded-lg object-cover"
               />
-              <p className="text-white mt-2 text-center">{website.type}</p>
+              <p className="text-white mt-2 text-center text-sm sm:text-base">{website.type}</p>
             </div>
           ))}
-        </div>
+      </Marquee>
       </div>
-      <button
-        onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/10 p-2 rounded-full"
-      >
-        <ChevronLeft className="text-white" />
-      </button>
-      <button
-        onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/10 p-2 rounded-full"
-      >
-        <ChevronRight className="text-white" />
-      </button>
-    </div>
-  )
+  );
 }
 
-export default function BusinessWebsiteBuilder() {
-  const { scrollY } = useScroll()
-  const opacity = useTransform(scrollY, [0, 200], [1, 0])
-  const scale = useTransform(scrollY, [0, 200], [1, 0.8])
 
-  const fadeUpVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 1, delay: 0.5 + i * 0.2, ease: [0.25, 0.4, 0.25, 1] },
-    }),
-  }
+
+
+function Navbar() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    const closeMenu = () => setIsOpen(false)
+    window.addEventListener("resize", closeMenu)
+    return () => window.removeEventListener("resize", closeMenu)
+  }, [])
 
   return (
-    <div className="relative bg-[#030303]">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-md">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex justify-between items-center">
           <div className="text-white font-bold text-xl">WebCraft</div>
-          <div className="space-x-4">
+          <div className="hidden md:flex space-x-4">
             <Button variant="ghost" className="text-white">
               Features
             </Button>
@@ -159,10 +136,48 @@ export default function BusinessWebsiteBuilder() {
               Login
             </Button>
           </div>
+          <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X /> : <Menu />}
+          </button>
         </div>
-      </nav>
+      </div>
+      {isOpen && (
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <Button variant="ghost" className="text-white w-full justify-start">
+              Features
+            </Button>
+            <Button variant="ghost" className="text-white w-full justify-start">
+              Templates
+            </Button>
+            <Button variant="ghost" className="text-white w-full justify-start">
+              Pricing
+            </Button>
+            <Button variant="outline" className="text-white border-white/20 w-full justify-start">
+              Login
+            </Button>
+          </div>
+        </div>
+      )}
+    </nav>
+  )
+}
 
-      <motion.div style={{ opacity, scale }} className="min-h-screen flex flex-col justify-center overflow-hidden">
+export default function BusinessWebsiteBuilder() {
+  const fadeUpVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: { duration: 1, delay: 0.5 + i * 0.2, ease: [0.25, 0.4, 0.25, 1] },
+    }),
+  }
+
+  return (
+    <div className="relative bg-[#030303]">
+      <Navbar />
+
+      <motion.div className="min-h-screen flex flex-col justify-center overflow-hidden py-20 lg:py-0">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl" />
 
         <div className="absolute inset-0 overflow-hidden">
@@ -208,26 +223,22 @@ export default function BusinessWebsiteBuilder() {
           />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 md:px-6 flex flex-col justify-between h-full py-20">
+        <div className="relative z-10 container mx-auto px-4 md:px-6 flex flex-col justify-between h-full">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="visible">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
                 <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
                   Create Your Business
                 </span>
-                <br />
-                <span
-                  className={cn(
-                    "bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300",
-                  )}
-                >
+                <br className="hidden sm:block" />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">
                   Website in Minutes
                 </span>
               </h1>
             </motion.div>
 
             <motion.div custom={2} variants={fadeUpVariants} initial="hidden" animate="visible">
-              <p className="text-lg md:text-xl text-white/60 mb-8 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-white/60 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4 sm:px-0">
                 Professional websites made simple. Answer a few questions about your business, and we'll create a
                 stunning website tailored just for you.
               </p>
@@ -239,39 +250,39 @@ export default function BusinessWebsiteBuilder() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 1 }}
-              className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
-            >
-              <FeatureCard
-                title="Easy Setup"
-                description="Answer a simple questionnaire about your business and watch your website come to life instantly."
-                delay={1.2}
-              />
-              <FeatureCard
-                title="Professional Design"
-                description="Get a beautifully designed website that reflects your brand and engages your customers."
-                delay={1.4}
-              />
-              <FeatureCard
-                title="Full Control"
-                description="Easily manage and update your website content through an intuitive dashboard."
-                delay={1.6}
-              />
-            </motion.div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1 }}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mt-12 sm:mt-16 px-4 sm:px-0"
+          >
+            <FeatureCard
+              title="Easy Setup"
+              description="Answer a simple questionnaire about your business and watch your website come to life instantly."
+              delay={1.2}
+            />
+            <FeatureCard
+              title="Professional Design"
+              description="Get a beautifully designed website that reflects your brand and engages your customers."
+              delay={1.4}
+            />
+            <FeatureCard
+              title="Full Control"
+              description="Easily manage and update your website content through an intuitive dashboard."
+              delay={1.6}
+            />
+          </motion.div>
         </div>
       </motion.div>
 
       <div className="container mx-auto px-4 md:px-6 py-24">
         <WebsiteGallery />
 
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-white mb-10 text-center">What Our Customers Say</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="mt-20 px-4 sm:px-0">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-10 text-center">What Our Customers Say</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <Testimonial
               name="Sarah Johnson"
               role="Small Business Owner"
@@ -293,14 +304,14 @@ export default function BusinessWebsiteBuilder() {
 
       <footer className="bg-black/30 backdrop-blur-md text-white/60 py-10">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
             <div>
               <h3 className="text-white font-bold mb-4">WebCraft</h3>
-              <p>Creating stunning websites for businesses of all sizes.</p>
+              <p className="text-sm sm:text-base">Creating stunning websites for businesses of all sizes.</p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Features</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-2 text-sm sm:text-base">
                 <li>Easy Setup</li>
                 <li>Professional Design</li>
                 <li>Full Control</li>
@@ -308,7 +319,7 @@ export default function BusinessWebsiteBuilder() {
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-2 text-sm sm:text-base">
                 <li>Blog</li>
                 <li>Tutorials</li>
                 <li>Support</li>
@@ -316,7 +327,7 @@ export default function BusinessWebsiteBuilder() {
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-2 text-sm sm:text-base">
                 <li>About Us</li>
                 <li>Careers</li>
                 <li>Contact</li>
@@ -324,11 +335,10 @@ export default function BusinessWebsiteBuilder() {
             </div>
           </div>
           <div className="mt-10 pt-8 border-t border-white/10 text-center">
-            <p>&copy; 2025 WebCraft. All rights reserved.</p>
+            <p className="text-sm sm:text-base">&copy; 2025 WebCraft. All rights reserved.</p>
           </div>
         </div>
       </footer>
     </div>
   )
 }
-
