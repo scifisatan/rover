@@ -1,8 +1,6 @@
-"use client"
-
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Plus } from "lucide-react"
+import { Loader2, Plus } from "lucide-react"
 import QRCode from "react-qr-code"
 import {
   LineChart,
@@ -26,7 +24,7 @@ import { useQuery } from "@tanstack/react-query"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { ChatbotUI } from "@/components/ChatbotUI"
 
-const Dashboard = () => {
+const DashboardComponent = () => {
   const [activeTab, setActiveTab] = useState("websites")
   const [isCreating, setIsCreating] = useState(false)
   const { user } = useSupabaseAuth()
@@ -127,16 +125,22 @@ const Dashboard = () => {
       <div className="relative z-10 p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <Button
-            onClick={() => setIsCreating(true)}
-            className="bg-white/10 text-white border border-white/20 hover:bg-white/20"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Website
-          </Button>
+          <div className="flex space-x-4">
+           
+            <Button
+              onClick={() => setIsCreating(true)}
+              className="bg-white/10 text-white border border-white/20 hover:bg-white/20"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Website
+            </Button>
+            <Button onClick={() => {supabase.auth.signOut(); navigate("/")}} className="bg-white/10 text-white border border-white/20 hover:bg-white/20">
+              Sign Out
+            </Button>
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 text-white">
           <TabsList className="bg-white/[0.06] border-white/[0.12] backdrop-blur-md">
             <TabsTrigger value="websites" className="text-white data-[state=active]:bg-white/10">
               Websites
@@ -349,5 +353,23 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
 
+const Dashboard = () => {
+  const navigate = useNavigate()
+  const { user, loading } = useSupabaseAuth()
+  if (loading) return (
+    <>
+      <AnimatedBackground />
+      <Loader2 className="text-black" />
+    </>
+  )
+  if (!user) {
+    navigate("/auth")
+  }
+  return (
+    <DashboardComponent />
+  )
+
+}
+
+export default Dashboard
