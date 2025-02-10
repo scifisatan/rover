@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import WebsiteDisplay from "./pages/WebsiteDisplay";
-
+ 
 const queryClient = new QueryClient();
 
 const App = () => (

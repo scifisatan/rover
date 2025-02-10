@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Marquee } from "@/components/ui/marquee"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
-
+ 
 function ElegantShape({ className, delay = 0, width = 400, height = 100, rotate = 0, gradient = "from-white/[0.08]" }) {
   return (
     <motion.div
