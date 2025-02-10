@@ -1,13 +1,14 @@
+// FeaturesSection.tsx
 "use client"
 
-import type { FC } from "react"
+import { FC } from "react"
 import { motion } from "framer-motion"
+import { FiCheckCircle } from "react-icons/fi"
 
 interface Feature {
-  id: number
   title: string
-  description?: string
-  display_order: number
+  description: string
+  icon: string
 }
 
 interface FeaturesSectionProps {
@@ -15,52 +16,44 @@ interface FeaturesSectionProps {
 }
 
 export const FeaturesSection: FC<FeaturesSectionProps> = ({ features }) => {
-  if (!features || features.length === 0) return null
-
   return (
-    <section className="py-20 bg-[#0F172A]">
+    <section className="py-20 bg-gradient-to-b from-[#1E293B] to-[#0F172A]">
       <div className="container mx-auto px-4">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-3xl font-semibold mb-12 text-center text-white"
+          className="text-4xl font-bold mb-16 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
         >
-          What We Offer
+          Why Choose Us
         </motion.h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {features
-            .sort((a, b) => a.display_order - b.display_order)
-            .map((feature, index) => (
-              <motion.div
-                key={feature.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group p-6 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300"
-              >
-                <div className="relative">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: "2rem" }}
-                    transition={{ duration: 0.3, delay: index * 0.1 + 0.3 }}
-                    className="h-1 bg-gradient-to-r from-pink-500 to-purple-500 mb-4"
-                  />
-                  <h3 className="text-xl font-medium mb-3 text-white group-hover:text-pink-400 transition-colors">
-                    {feature.title}
-                  </h3>
-                  {feature.description && (
-                    <p className="text-gray-400 group-hover:text-gray-300 transition-colors">{feature.description}</p>
-                  )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="p-8 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 hover:border-purple-400/30 transition-all group"
+            >
+              <div className="mb-6">
+                <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <FiCheckCircle className="text-2xl text-purple-400" />
                 </div>
-              </motion.div>
-            ))}
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+              <div className="mt-6 pt-4 border-t border-white/10 group-hover:border-purple-400/20 transition-colors">
+                <span className="text-purple-400 hover:text-purple-300 cursor-pointer transition-colors">
+                  Learn more →
+                </span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
   )
 }
-
