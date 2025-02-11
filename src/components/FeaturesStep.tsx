@@ -7,6 +7,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash } from "lucide-react"
+import { AutofillButton } from "@/components/ui/AutofillButton"
+import { FormStepLayout } from "@/components/website-form/FormStepLayout"
 
 const featureSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -20,7 +22,7 @@ const formSchema = z.object({
   
 type FormValues = z.infer<typeof formSchema>
 
-export const FeaturesStep = ({ onComplete }) => {
+export const FeaturesStep = ({ onComplete, initialData }) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,57 +47,77 @@ export const FeaturesStep = ({ onComplete }) => {
     onComplete({ features: data.features.map((feature, index) => ({ ...feature, display_order: index })) })
   }
 
+  const handleSuggestions = (suggestions: any) => {
+    if (suggestions?.features) {
+      // Replace existing features with suggestions
+      suggestions.features.forEach((feature: any, index: number) => {
+        if (index >= form.getValues('features').length) {
+          form.append('features', feature)
+        } else {
+          form.setValue(`features.${index}.title`, feature.title)
+          form.setValue(`features.${index}.description`, feature.description)
+        }
+      })
+    }
+  }
+
   return (
-    <Form {...form}>
-      <div className="space-y-6">
-        {fields.map((field, index) => (
-          <div key={field.id} className="space-y-4 p-4 border rounded-md">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Feature {index + 1}</h3>
-              {fields.length > 1 && (
-                <Button type="button" variant="destructive" onClick={() => remove(index)}>
-                  <Trash className="h-4 w-4" />
-                </Button>
-              )}
+    <FormStepLayout
+      currentStep="features"
+      userInput={form.getValues('features')?.[0]?.title || ''}
+      onSuggestions={handleSuggestions}
+    >
+      <Form {...form}>
+        <div className="space-y-6">
+          {fields.map((field, index) => (
+            <div key={field.id} className="space-y-4 p-4 border rounded-md">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Feature {index + 1}</h3>
+                {fields.length > 1 && (
+                  <Button type="button" variant="destructive" onClick={() => remove(index)}>
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <FormField
+                control={form.control}
+                name={`features.${index}.title`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`features.${index}.description`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <FormField
-              control={form.control}
-              name={`features.${index}.title`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title *</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`features.${index}.description`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => append({ title: "", description: "", display_order: fields.length })}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Feature
-        </Button>
-      </div>
-    </Form>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => append({ title: "", description: "", display_order: fields.length })}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Feature
+          </Button>
+        </div>
+      </Form>
+    </FormStepLayout>
   )
 }
 

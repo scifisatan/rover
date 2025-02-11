@@ -25,9 +25,17 @@ AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
 AZURE_KEY = os.getenv("AZURE_KEY")
 
 # Gemini Setup
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+try:
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY not found in environment variables")
+        
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    logger.info("Gemini API configured successfully")
+except Exception as e:
+    logger.error(f"Failed to configure Gemini API: {str(e)}")
+    raise
 
 # CORS middleware setup
 app.add_middleware(
@@ -55,6 +63,10 @@ class ChatRequest(BaseModel):
     message: str
     businessData: Dict[str, Any]
     imageUrl: Optional[str] = None  # This will now accept base64 strings
+
+class FormAssistRequest(BaseModel):
+    userInput: str
+    currentStep: str
 
 def analyze_image(image_base64: str):
     try:
@@ -241,6 +253,83 @@ async def chat(request: ChatRequest):
     except Exception as e:
         logger.error(f"Error in chat endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/form-assist")
+async def form_assist(request: FormAssistRequest):
+    logger.info(f"Received form assist request - Step: {request.currentStep}, Input: {request.userInput}")
+    try:
+        if not GEMINI_API_KEY:
+            raise HTTPException(status_code=500, detail="API key not configured")
+
+        # Very simple and direct prompt
+        prompt = f"""
+        Business Input: {request.userInput}
+        Step: {request.currentStep}
+
+        Generate ONE simple JSON response.
+        DO NOT include any extra text or explanations.
+        DO NOT use markdown code blocks.
+
+        For "basic" step use this EXACT format:
+        {{
+            "suggestions": {{
+                "business_name": "Actual business name from input if given, otherwise create one",
+                "tagline": "Short catchy tagline about the specific business",
+                "description": "2-3 sentences about this specific business"
+            }}
+        }}
+
+        For "features" step use this EXACT format:
+        {{
+            "suggestions": {{
+                "features": [
+                    {{ "title": "Specific feature for this business", "description": "How this feature benefits customers" }}
+                ]
+            }}
+        }}
+        """
+
+        logger.info("Sending prompt to Gemini...")
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.3,  # Very low temperature for more focused responses
+                "top_p": 0.5,
+                "top_k": 20,
+            }
+        )
+
+        raw_text = response.text.strip()
+        logger.debug(f"Raw response: {raw_text}")
+
+        # Clean any potential formatting
+        raw_text = raw_text.replace('```json', '').replace('```', '').strip()
+        
+        try:
+            suggestions = json.loads(raw_text)
+            logger.info(f"Parsed suggestions: {json.dumps(suggestions)}")
+            return suggestions
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {str(e)}, raw text: {raw_text}")
+            return {
+                "suggestions": {
+                    "business_name": request.userInput.split()[0] if request.userInput else "Business Name",
+                    "tagline": "Unique Himalayan Coffee Experience",
+                    "description": f"Based on your input: {request.userInput}"
+                } if request.currentStep == "basic" else {
+                    "features": [{"title": "Feature", "description": "Please provide more details"}]
+                }
+            }
+            
+    except Exception as e:
+        logger.error(f"Form assist error: {str(e)}")
+        return {
+            "suggestions": {
+                "business_name": "Carbara",  # Use what we know from the input
+                "tagline": "Authentic Himalayan Coffee Experience",
+                "description": "Specializing in premium Himalayan coffee."
+            }
+        }
 
 # Add health check endpoint
 @app.get("/health")

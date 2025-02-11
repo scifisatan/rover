@@ -13,6 +13,7 @@ import { ContactStep } from "./../../ContactStep"
 import { SocialMediaStep } from "./../../SocialMediaStep"
 import { ReviewStep } from "./../../ReviewStep"
 import { AnimatedBackground } from "@/components/ui/animated-background"
+import { AIFormAssistant } from '@/components/AIFormAssistant'
  
 const STEPS = ["basic", "features", "team", "gallery", "contact", "social", "review"] as const
 type Step = (typeof STEPS)[number]
@@ -28,6 +29,7 @@ export const CreateWebsiteForm = ({ onFormCompletion }) => {
     social: null,
   })
   const { toast } = useToast()
+  const [userInput, setUserInput] = useState('')
 
   const currentStepIndex = STEPS.indexOf(currentStep)
   const isFirstStep = currentStepIndex === 0
@@ -137,6 +139,24 @@ export const CreateWebsiteForm = ({ onFormCompletion }) => {
     return steps[currentStep];
   }
 
+  const handleAISuggestions = (suggestions: any) => {
+    // Update form data based on the current step and suggestions
+    switch(currentStep) {
+      case 'basic-info':
+        // Update basic info form
+        break;
+      case 'features':
+        // Update features form
+        break;
+      case 'team':
+        // Update team form
+        break;
+      case 'contact':
+        // Update contact form
+        break;
+    }
+  };
+
   return (
     <div className="relative min-h-screen w-full">
       <AnimatedBackground />
@@ -199,6 +219,12 @@ export const CreateWebsiteForm = ({ onFormCompletion }) => {
             </div>
           )}
         </Card>
+        <div className="grid grid-cols-3 gap-8">
+          <div className="col-span-2">
+            {/* Existing form steps */}
+          </div>
+          
+        </div>
       </div>
     </div>
   )

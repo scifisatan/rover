@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { useState } from "react"
+import { AutofillButton } from "@/components/ui/AutofillButton"
+import { FormStepLayout } from "@/components/website-form/FormStepLayout"
 
 const formSchema = z.object({
   business_name: z.string().min(2, "Business name must be at least 2 characters"),
@@ -28,6 +30,14 @@ export const BasicInfoStep = ({ onComplete, initialData }) => {
     },
   })
 
+  const handleSuggestions = (suggestions: any) => {
+    if (suggestions) {
+      form.setValue('business_name', suggestions.business_name)
+      form.setValue('tagline', suggestions.tagline)
+      form.setValue('description', suggestions.description)
+    }
+  }
+
   // Auto-save on form changes
   React.useEffect(() => {
     const subscription = form.watch((value) => {
@@ -39,45 +49,51 @@ export const BasicInfoStep = ({ onComplete, initialData }) => {
   }, [form.watch, onComplete, user])
 
   return (
-    <Form {...form}>
-      <div className="space-y-6">
-        {[
-          { name: "business_name", label: "Business Name", required: true },
-          { name: "tagline", label: "Tagline" },
-        ].map((field) => (
+    <FormStepLayout
+      currentStep="basic"
+      userInput={form.watch('business_name') || ''}
+      onSuggestions={handleSuggestions}
+    >
+      <Form {...form}>
+        <div className="space-y-6">
+          {[
+            { name: "business_name", label: "Business Name", required: true },
+            { name: "tagline", label: "Tagline" },
+          ].map((field) => (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={field.name as keyof FormValues}
+              render={({ field: fieldProps }) => (
+                <FormItem>
+                  <FormLabel>
+                    {field.label}
+                    {field.required && " *"}
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...fieldProps} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
           <FormField
-            key={field.name}
             control={form.control}
-            name={field.name as keyof FormValues}
-            render={({ field: fieldProps }) => (
+            name="description"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  {field.label}
-                  {field.required && " *"}
-                </FormLabel>
+                <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Input {...fieldProps} />
+                  <Textarea {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        ))}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-    </Form>
+        </div>
+      </Form>
+    </FormStepLayout>
   )
 }
 
